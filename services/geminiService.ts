@@ -1,9 +1,26 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { CampaignStrategy, CampaignRequest } from "../types";
 
-// Initialize the client. 
-// Note: We access process.env.API_KEY directly as per requirements.
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+// We use a singleton pattern or lazy initialization to avoid accessing process.env 
+// at the top level, which can crash the app in some browser environments if not polyfilled.
+let ai: GoogleGenAI | null = null;
+
+const getAiClient = () => {
+  if (!ai) {
+    try {
+      // Ensure we handle the potential ReferenceError if 'process' is not defined in the browser
+      const apiKey = process.env.API_KEY;
+      if (!apiKey) {
+        throw new Error("API_KEY is missing from environment variables.");
+      }
+      ai = new GoogleGenAI({ apiKey: apiKey });
+    } catch (error) {
+      console.error("Failed to initialize Gemini client:", error);
+      throw new Error("API Configuration Error. Please check your environment settings.");
+    }
+  }
+  return ai;
+};
 
 export const generateCampaignStrategy = async (
   request: CampaignRequest
@@ -21,7 +38,8 @@ export const generateCampaignStrategy = async (
   `;
 
   try {
-    const response = await ai.models.generateContent({
+    const client = getAiClient();
+    const response = await client.models.generateContent({
       model: modelId,
       contents: prompt,
       config: {
@@ -57,6 +75,6 @@ export const generateCampaignStrategy = async (
     }
   } catch (error) {
     console.error("Error generating strategy:", error);
-    throw new Error("Failed to generate campaign strategy. Please try again.");
+    throw error; // Re-throw to be caught by the component
   }
 };
