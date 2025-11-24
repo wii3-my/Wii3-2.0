@@ -1,18 +1,13 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { CampaignStrategy, CampaignRequest } from "../types";
 
-// Declare process to avoid TypeScript errors during build
-declare const process: {
-  env: {
-    API_KEY: string;
-  };
-};
-
 let ai: GoogleGenAI | null = null;
 
 const getAiClient = () => {
   if (!ai) {
-    // The define plugin in vite.config.ts replaces process.env.API_KEY with the actual string.
+    // Vite replaces process.env.API_KEY with the actual value at build time
+    // If usage of 'process' throws an error in your editor, it is likely a linting issue, 
+    // but it will work in the build because of vite.config.ts define.
     const apiKey = process.env.API_KEY;
 
     if (!apiKey) {

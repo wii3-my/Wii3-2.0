@@ -6,6 +6,7 @@
     <title>wii3 | Influencer Marketing Agency</title>
     <script>
       // Polyfill process to prevent "process is not defined" errors in the browser
+      // This is crucial for some libraries that expect a Node.js-like environment
       window.process = {
         env: {
           NODE_ENV: 'production'
