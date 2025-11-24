@@ -1,22 +1,24 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { CampaignStrategy, CampaignRequest } from "../types";
 
-// We use a singleton pattern or lazy initialization to avoid accessing process.env 
-// at the top level, which can crash the app in some browser environments if not polyfilled.
 let ai: GoogleGenAI | null = null;
 
 const getAiClient = () => {
   if (!ai) {
+    // The define plugin in vite.config.ts replaces process.env.API_KEY with the actual string.
+    // However, we add a safety check for development environments where the config might be missing.
+    const apiKey = process.env.API_KEY;
+
+    if (!apiKey) {
+      console.error("API_KEY is missing. Ensure it is set in your Vercel Environment Variables.");
+      throw new Error("API Configuration Error. API_KEY is missing.");
+    }
+
     try {
-      // Ensure we handle the potential ReferenceError if 'process' is not defined in the browser
-      const apiKey = process.env.API_KEY;
-      if (!apiKey) {
-        throw new Error("API_KEY is missing from environment variables.");
-      }
       ai = new GoogleGenAI({ apiKey: apiKey });
     } catch (error) {
       console.error("Failed to initialize Gemini client:", error);
-      throw new Error("API Configuration Error. Please check your environment settings.");
+      throw new Error("Failed to initialize AI client.");
     }
   }
   return ai;
@@ -25,7 +27,7 @@ const getAiClient = () => {
 export const generateCampaignStrategy = async (
   request: CampaignRequest
 ): Promise<CampaignStrategy> => {
-  const modelId = "gemini-2.5-flash"; // Using Flash for speed/efficiency on text tasks
+  const modelId = "gemini-2.5-flash";
 
   const prompt = `
     Act as a world-class Influencer Marketing Strategist for the agency 'wii3'.
@@ -75,6 +77,6 @@ export const generateCampaignStrategy = async (
     }
   } catch (error) {
     console.error("Error generating strategy:", error);
-    throw error; // Re-throw to be caught by the component
+    throw error;
   }
 };
