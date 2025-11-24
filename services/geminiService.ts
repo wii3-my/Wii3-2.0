@@ -8,7 +8,7 @@ const getAiClient = () => {
     // Vite replaces process.env.API_KEY with the actual value at build time
     // If usage of 'process' throws an error in your editor, it is likely a linting issue, 
     // but it will work in the build because of vite.config.ts define.
-    const apiKey = process.env.API_KEY;
+    const apiKey = import.meta.env.VITE_API_KEY;
 
     if (!apiKey) {
       console.error("API_KEY is missing. Ensure it is set in your Vercel Environment Variables.");
