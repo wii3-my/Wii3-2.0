@@ -3,7 +3,7 @@ import { CampaignStrategy, CampaignRequest } from "../types";
 
 // Initialize the client. 
 // Note: We access process.env.API_KEY directly as per requirements.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
 export const generateCampaignStrategy = async (
   request: CampaignRequest
